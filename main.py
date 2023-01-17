@@ -267,6 +267,7 @@ if __name__ == '__main__':
                             not_enough_for_one.append(recipe.name)
                     if len(enough_to_bake_one) == 0:
                         print("Can't bake anything, you're out of stock.")
+                        print("Can't bake anything right now. Check flour first.")
                     else:
                         print(f"\nYou can bake: {enough_to_bake_one}")
                         if len(not_enough_for_one) > 0:
@@ -373,10 +374,13 @@ if __name__ == '__main__':
 
                             case 3:
                                 """Cancel order"""
-                                for key in cart.keys():
-                                    for_sale.get(key)[0] += cart.get(key)[0]
-                                cart.clear()
-                                print("Cart is empty.")
+                                if len(cart) == 0:
+                                    print("Your cart is empty.")
+                                else:
+                                    for key in cart.keys():
+                                        for_sale.get(key)[0] += cart.get(key)[0]
+                                    cart.clear()
+                                    print("Cart is empty.")
                             case 4:
                                 """Print bill"""
                                 if len(cart) == 0:
