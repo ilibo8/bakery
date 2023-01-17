@@ -131,7 +131,7 @@ def import_data() -> None:
 
 
 def get_day() -> int:
-    if not os.path.isfile(reports_file):
+    if os.path.getsize(reports_file) == 0:
         return 1
     else:
         with open(reports_file) as f:
