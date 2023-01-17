@@ -266,7 +266,6 @@ if __name__ == '__main__':
                         else:
                             not_enough_for_one.append(recipe.name)
                     if len(enough_to_bake_one) == 0:
-                        print("Can't bake anything, you're out of stock.")
                         print("Can't bake anything right now. Check flour first.")
                     else:
                         print(f"\nYou can bake: {enough_to_bake_one}")
