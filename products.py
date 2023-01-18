@@ -1,4 +1,4 @@
-from recipes import Recipes
+from goods import Goods
 from project_exceptions import *
 
 
@@ -6,10 +6,11 @@ class Products:
     names_of_all = []
     all_products = []
 
-    def __init__(self, name: str, price: int, on_stock: int):
+    def __init__(self, name: str, price: int, on_stock: int, recipe: dict):
         self.name = name
         self.__price = price
         self.__on_stock = on_stock
+        self.recipe = recipe
         Products.all_products.append(self)
         Products.names_of_all.append(self.name)
 
@@ -67,9 +68,9 @@ class Products:
     @staticmethod
     def bake(name: str, number: int) -> None:
         try:
-            recept = Recipes.find_recipe(name)
-            if Recipes.check_there_is_enough_ingredients(recept, number):
-                Recipes.change_goods_quantity_after_making_products(recept, number)
+            product = Products.find_product_by_name(name)
+            if product.check_there_is_enough_ingredients(number):
+                product.change_goods_quantity_after_making_products(number)
                 product = Products.find_product_by_name(name)
                 product.__on_stock += number
             else:
@@ -88,3 +89,40 @@ class Products:
             if item.__on_stock > 0:
                 for_sale[item.name] = [item.__on_stock, item.__price]
         return for_sale
+
+    def print_recipe(self) -> None:
+        print("For one we need - ", end="")
+        for ingredient in self.recipe.keys():
+            print(f"{ingredient}: {self.recipe[ingredient]}({Goods.get_measure_for_goods(ingredient)})", end=" ")
+
+    def get_quantity_for_ingredient(self, ingredient_name: str) -> float:
+        for ingredient, quantity in self.recipe.items():
+            if ingredient == ingredient_name:
+                return quantity
+        raise NotFound
+
+    def check_there_is_enough_ingredients(self, number_of_products_making: int) -> bool:
+        for name in self.recipe.keys():
+            ingredient = Goods.find(name)
+            quantity_after_making = ingredient.get_quantity() - \
+                                    self.get_quantity_for_ingredient(ingredient.name) * number_of_products_making
+            if quantity_after_making >= 0:
+                continue
+            else:
+                return False
+        return True
+
+    def change_goods_quantity_after_making_products(self, number_of_products_making) -> None:
+        for name in self.recipe.keys():
+            ingredient = Goods.find(name)
+            new_goods_quantity = ingredient.get_quantity() - \
+                                 self.get_quantity_for_ingredient(ingredient.name) * number_of_products_making
+            ingredient.set_quantity(new_goods_quantity)
+
+    def calculate_max_products_to_bake_based_on_stock(self) -> int:
+        numbers = []
+        for name, value in self.recipe.items():
+            good = Goods.find(name)
+            numbers.append(int(good.get_quantity() // value))
+        return min(numbers)
+

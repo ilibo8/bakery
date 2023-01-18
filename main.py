@@ -5,7 +5,6 @@ import json
 import pandas as pd
 from goods import Goods
 from products import Products
-from recipes import Recipes
 from reports import Reports
 
 
@@ -117,7 +116,7 @@ def import_data() -> None:
         name = row['Product name']
         price = row['Price']
         quantity = row['Quantity']
-        Products(name, price, quantity)
+        Products(name, price, quantity, recipe={})
 
     """Initialize Recipes"""
     r_dict = {}
@@ -127,7 +126,8 @@ def import_data() -> None:
         key = item.pop("Recipe for")
         r_dict[key] = item
     for key, value in r_dict.items():
-        Recipes(name=key, quantity=value)
+        product = Products.find_product_by_name(key)
+        product.recipe = value
 
 
 def get_day() -> int:
@@ -260,11 +260,11 @@ if __name__ == '__main__':
                     """Bake a product"""
                     enough_to_bake_one = []
                     not_enough_for_one = []
-                    for recipe in Recipes.all_recipes:
-                        if Recipes.check_there_is_enough_ingredients(recipe, 1):
-                            enough_to_bake_one.append(recipe.name)
+                    for product in Products.all_products:
+                        if product.check_there_is_enough_ingredients(1):
+                            enough_to_bake_one.append(product.name)
                         else:
-                            not_enough_for_one.append(recipe.name)
+                            not_enough_for_one.append(product.name)
                     if len(enough_to_bake_one) == 0:
                         print("Can't bake anything right now. Check flour first.")
                     else:
@@ -280,9 +280,9 @@ if __name__ == '__main__':
                                 continue
                             else:
                                 break
-                        recipe = Recipes.find_recipe(product_name)
-                        recipe.print_recipe()
-                        bake_max = recipe.calculate_max_products_to_bake_based_on_stock()
+                        product = Products.find_product_by_name(product_name)
+                        product.print_recipe()
+                        bake_max = product.calculate_max_products_to_bake_based_on_stock()
                         print(f"\nMaximum you can bake is {bake_max}")
                         print("How much do you want to bake?", end="")
                         number = ask_for_positive_number()
