@@ -91,9 +91,9 @@ class Products:
         return for_sale
 
     def print_recipe(self) -> None:
-        print("For one we need - ", end="")
+        print("For one : ", end="")
         for ingredient in self.recipe.keys():
-            print(f"{ingredient}: {self.recipe[ingredient]}({Goods.get_measure_for_goods(ingredient)})", end=" ")
+            print(f"{ingredient} - {self.recipe[ingredient]}({Goods.get_measure_for_goods(ingredient)})", end=" ")
 
     def get_quantity_for_ingredient(self, ingredient_name: str) -> float:
         for ingredient, quantity in self.recipe.items():
@@ -125,4 +125,13 @@ class Products:
             good = Goods.find(name)
             numbers.append(int(good.get_quantity() // value))
         return min(numbers)
+
+    @classmethod
+    def info_tuples(cls) -> list:
+        all_products = []
+        for product in cls.all_products:
+            name = product.name
+            price = product.__price
+            all_products.append((name, price))
+        return all_products
 

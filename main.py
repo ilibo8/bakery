@@ -7,7 +7,6 @@ from goods import Goods
 from products import Products
 from reports import Reports
 
-
 euro = chr(8364)
 data_file = "Data/data.xlsx"
 recipes_file = "Data/recipes.xlsx"
@@ -16,22 +15,27 @@ current_file = "Reports/current.txt"
 
 options_main = """
     1. Supplies
-    2. Buy goods
-    3. Bake a product
-    4. Change price
-    5. SALES
-    6. Reports
+    2. Bakery
+    3. SALES
+    4. Reports
 
 * to End the Day enter 0
 """
 
+options_supplies = """
+    1. Goods & Products Info
+    2. Add more Goods
+    3. Change price of a Product
+    
+* to return to Main enter 0
+"""
 options_report = """
     1. Current
     2. For specific day
     3. Display all
     4. Monthly report
 
-* to go back to the main meny enter 0
+* to return to Main enter 0
       	"""
 
 options_sales = """
@@ -40,12 +44,12 @@ options_sales = """
     3. Cancel order
     4. Print bill
 
-* to go back to the main meny enter 0
+* to return to Main enter 0
       	"""
 
 
 def make_choice(number: int) -> int:
-    print("Choose an option.", end="")
+    print("Choose option.", end="")
     while True:
         try:
             while True:
@@ -75,11 +79,11 @@ def ask_for_positive_number() -> int:
             continue
 
 
-def ask_for_price() -> float:
+def ask_for_float() -> float:
     while True:
         try:
             while True:
-                number = float(input("New price >>> "))
+                number = float(input(">>> "))
                 if number > 0:
                     return number
                 else:
@@ -98,6 +102,7 @@ def stock_info() -> str:
     string += "\n-----------------------------------------------"
     for goods, products in itertools.zip_longest(Goods.info(), Products.info(), fillvalue=""):
         string += f'\n{goods: <25}{products: <25}'
+    string += "\n-----------------------------------------------"
     return string
 
 
@@ -234,30 +239,62 @@ if __name__ == '__main__':
     try:
         while True:
             print(options_main)
-            choice = make_choice(number=6)
+            choice = make_choice(number=4)
 
             match choice:
                 case 1:
                     """Supplies"""
-                    print(stock_info())
+                    print(options_supplies)
+                    choice_1 = make_choice(number=3)
+
+                    if choice_1 == 1:
+                        "Goods & Products Info"
+                        print(stock_info())
+
+                    if choice_1 == 2:
+                        "Add more Goods"
+                        keys = list(range(1, (len(Goods.all_goods) + 1)))
+                        name_and_qty = Goods.info_tuples()
+                        add_items_options = dict(zip(keys, name_and_qty))
+                        print("\nWhat do you want to add?")
+                        print("------------------------------")
+                        for key, value in add_items_options.items():
+                            print(f"{key:3}. {value[0].capitalize():12} {value[1]:4} {value[2]}")
+                        print("\n* to return to Main enter 0\n")
+                        product_choice = make_choice(len(add_items_options))
+                        if product_choice == 0:
+                            pass
+                        else:
+                            print(f"How much {add_items_options.get(product_choice)[0]} do you want to add? ", end="")
+                            qty = ask_for_float()
+                            Goods.buy(name=str(add_items_options.get(product_choice)[0]), number=qty)
+
+                    if choice_1 == 3:
+                        "Change price of a product"
+                        keys = list(range(1, (len(Products.all_products) + 1)))
+                        name_and_price = Products.info_tuples()
+                        change_price_options = dict(zip(keys, name_and_price))
+                        print("\nChange price of which product?")
+                        print("-------------------------------")
+                        for key, value in change_price_options.items():
+                            print(f"{key:3}. {value[0].capitalize():12} {value[1]:4} {euro}")
+                        print("\n* to return to Main enter 0\n")
+                        product_choice = make_choice(len(change_price_options))
+                        if product_choice == 0:
+                            pass
+                        else:
+                            product_name = change_price_options.get(product_choice)[0]
+                            product = Products.find_product_by_name(product_name)
+                            print(f"New price for {change_price_options.get(product_choice)[0]}", end="")
+                            new_price = ask_for_float()
+                            prices = [product.get_price()]
+                            product.set_price(new_price)
+                            prices.append(new_price)
+                            print(f"{product.name.capitalize()} - New price: {product.get_price()} {euro}")
+                            report_today.changed_price[product.name] = prices
 
                 case 2:
-                    """Buy goods"""
-                    for item in Goods.info():
-                        print(item)
-                    while True:
-                        goods = input("\nWhat do you want to buy >>> ").lower()
-                        if goods not in Goods.names_of_all:
-                            print("Wrong input. Choose one of the items on stock.")
-                            continue
-                        else:
-                            break
-                    print("How much do you want?", end="")
-                    number = ask_for_positive_number()
-                    Goods.buy(name=goods, number=number)
-
-                case 3:
-                    """Bake a product"""
+                    """Bakery"""
                     enough_to_bake_one = []
                     not_enough_for_one = []
                     for product in Products.all_products:
@@ -266,48 +303,35 @@ if __name__ == '__main__':
                         else:
                             not_enough_for_one.append(product.name)
                     if len(enough_to_bake_one) == 0:
-                        print("Can't bake anything right now. Check flour first.")
+                        print("Can't bake anything now. Check stock of goods.")
                     else:
-                        print(f"\nYou can bake: {enough_to_bake_one}")
+                        keys = list(range(1, (len(enough_to_bake_one) + 1)))
+                        bake_options = dict(zip(keys, enough_to_bake_one))
                         if len(not_enough_for_one) > 0:
                             print(f"To bake: {not_enough_for_one} you need to buy some goods.")
                         if len(Goods.check_for_low_stock()) > 0:
                             [print(f"{good.capitalize()} is low on stock.") for good in Goods.check_for_low_stock()]
-                        while True:
-                            product_name = input("What do you want to bake >>> ").lower()
-                            if product_name not in enough_to_bake_one:
-                                print("Wrong input.")
-                                continue
-                            else:
-                                break
-                        product = Products.find_product_by_name(product_name)
-                        product.print_recipe()
-                        bake_max = product.calculate_max_products_to_bake_based_on_stock()
-                        print(f"\nMaximum you can bake is {bake_max}")
-                        print("How much do you want to bake?", end="")
-                        number = ask_for_positive_number()
-                        Products.bake(name=product_name, number=number)
-                        if number <= bake_max:
-                            report_today.update_baked(product_name, number)
+                        print("\nWhat do you want to bake?")
+                        print("------------------------------")
+                        for key, value in bake_options.items():
+                            print(f"{key}. {value.capitalize()}")
+                        print("\n* to return to Main enter 0\n")
+                        number = make_choice(len(bake_options))
+                        if number == 0:
+                            pass
+                        else:
+                            product_name = bake_options.get(number)
+                            product = Products.find_product_by_name(product_name)
+                            product.print_recipe()
+                            bake_max = product.calculate_max_products_to_bake_based_on_stock()
+                            print(f"\nMaximum to bake is {bake_max}")
+                            print("How much do you want to bake?", end="")
+                            number = ask_for_positive_number()
+                            Products.bake(name=product_name, number=number)
+                            if number <= bake_max:
+                                report_today.update_baked(product_name, number)
 
-                case 4:
-                    """Change price"""
-                    print("Change price of which product ?")
-                    print(Products.names_of_all)
-                    choice = input("Your choice >>> ").lower()
-                    while choice not in Products.names_of_all:
-                        choice = input("Typing error, try again >>>").lower()
-                    product = Products.find_product_by_name(choice)
-                    print(f"{product.name.capitalize()} - {product.get_price()} {euro}")
-                    new_price = ask_for_price()
-                    prices = [product.get_price()]
-                    print(f"{product.name.capitalize()} - old price: {product.get_price()} {euro}")
-                    product.set_price(new_price)
-                    prices.append(new_price)
-                    print(f"{product.name.capitalize()} - new price: {product.get_price()} {euro}")
-                    report_today.changed_price[product.name] = prices
-
-                case 5:
+                case 3:
                     """SALES"""
                     for_sale = Products.products_for_sale()
                     while True:
@@ -402,7 +426,7 @@ if __name__ == '__main__':
                             case 0:
                                 break
 
-                case 6:
+                case 4:
                     """Reports"""
                     while True:
                         print(options_report)

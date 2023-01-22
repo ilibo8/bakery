@@ -57,7 +57,17 @@ class Goods:
         goods = Goods.find(name)
         new_quantity = round(goods.__quantity + number, 2)
         goods.set_quantity(new_quantity)
-        print(f"{goods.name} is now - {goods.__quantity} on stock.")
+        print(f"{goods.name.capitalize()} is now - {goods.__quantity} on stock.")
+
+    @classmethod
+    def info_tuples(cls) -> list:
+        all_goods = []
+        for goods in cls.all_goods:
+            name = goods.name
+            qty = goods.__quantity
+            measure = goods.measure
+            all_goods.append((name, qty, measure))
+        return all_goods
 
     @classmethod
     def info(cls) -> list:
