@@ -1,12 +1,13 @@
 from goods import Goods
 from project_exceptions import *
+from utility import ask_for_float, make_choice, euro
 
 
 class Products:
     names_of_all = []
     all_products = []
 
-    def __init__(self, name: str, price: int, on_stock: int, recipe: dict):
+    def __init__(self, name: str, price: float, on_stock: int, recipe: dict):
         self.name = name
         self.__price = price
         self.__on_stock = on_stock
@@ -135,3 +136,42 @@ class Products:
             all_products.append((name, price))
         return all_products
 
+    @classmethod
+    def create_new(cls):
+        string = "\nCurrent products:\n"
+        for name in cls.names_of_all:
+            string += f"{name}, "
+        print(string[:-2])
+        new_product_name = input("\nWhat new product would you like to add? >>> ").lower()
+        while new_product_name in cls.names_of_all:
+            if new_product_name.isdigit():
+                raise Exception("Cannot be a number.")
+            new_product_name = input("Input error. Already have that product, try another one. >>> ").lower()
+        print("Enter price for new product? ", end="")
+        price = ask_for_float()
+        Products(name=new_product_name, price=price, on_stock=0, recipe={})
+        print(f"We have new product - {new_product_name} {price} {euro} ")
+
+    @classmethod
+    def delete(cls):
+        keys = list(range(1, (len(cls.all_products) + 1)))
+        values = [product.name for product in cls.all_products]
+        options = dict(zip(keys, values))
+        print("\nWhich product to remove?")
+        print("------------------------------")
+        for key, value in options.items():
+            print(f"{key:3}. {value.capitalize():12}")
+        print("\n* to return to Main enter 0\n")
+        choice = make_choice(number=len(values))
+        if choice == 0:
+            pass
+        else:
+            answer = input(f"Are you sure you want to remove {options.get(choice)}? Y/N >>>").lower()
+            while answer not in ("y", "n"):
+                answer = input(f"Please confirm removal of {options.get(choice)}? Y/N >>>").lower()
+            if answer == "n":
+                print("Canceled.")
+            else:
+                for product in cls.all_products:
+                    if product.name == options.get(choice):
+                        del product

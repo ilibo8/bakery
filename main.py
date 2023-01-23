@@ -3,6 +3,7 @@ import itertools
 import os
 import json
 import pandas as pd
+from utility import *
 from goods import Goods
 from products import Products
 from reports import Reports
@@ -12,86 +13,6 @@ data_file = "Data/data.xlsx"
 recipes_file = "Data/recipes.xlsx"
 reports_file = "Reports/by_day.txt"
 current_file = "Reports/current.txt"
-
-options_main = """
-    1. Supplies
-    2. Bakery
-    3. SALES
-    4. Reports
-
-* to End the Day enter 0
-"""
-
-options_supplies = """
-    1. Goods & Products Info
-    2. Add more Goods
-    3. Change price of a Product
-    
-* to return to Main enter 0
-"""
-options_report = """
-    1. Current
-    2. For specific day
-    3. Display all
-    4. Monthly report
-
-* to return to Main enter 0
-      	"""
-
-options_sales = """
-    1. Add item
-    2. Remove item
-    3. Cancel order
-    4. Print bill
-
-* to return to Main enter 0
-      	"""
-
-
-def make_choice(number: int) -> int:
-    print("Choose option.", end="")
-    while True:
-        try:
-            while True:
-                choice = int(input(" >>> "))
-                if choice in range(number + 1):
-                    return choice
-                else:
-                    print("Choose appropriate number.")
-                    continue
-        except ValueError:
-            print("Typing error. Try again.")
-            continue
-
-
-def ask_for_positive_number() -> int:
-    while True:
-        try:
-            while True:
-                number = int(input(" >>> "))
-                if number > 0:
-                    return number
-                else:
-                    print("Choose positive number.")
-                    continue
-        except ValueError:
-            print("Typing error. Try again.")
-            continue
-
-
-def ask_for_float() -> float:
-    while True:
-        try:
-            while True:
-                number = float(input(">>> "))
-                if number > 0:
-                    return number
-                else:
-                    print("Must be over 0.")
-                    continue
-        except ValueError:
-            print("Typing error. Try again.")
-            continue
 
 
 def stock_info() -> str:
@@ -239,19 +160,20 @@ if __name__ == '__main__':
     try:
         while True:
             print(options_main)
-            choice = make_choice(number=4)
+            choice = make_choice(number=6)
 
             match choice:
                 case 1:
-                    """Supplies"""
-                    print(options_supplies)
-                    choice_1 = make_choice(number=3)
+                    "Supplies Info"
+                    print(stock_info())
 
-                    if choice_1 == 1:
-                        "Goods & Products Info"
-                        print(stock_info())
+                case 2:
+                    "Goods"
+                    print(options_goods)
+                    choice_goods = make_choice(number=3)
 
-                    if choice_1 == 2:
+                    "Increase stock of goods"
+                    if choice_goods == 1:
                         "Add more Goods"
                         keys = list(range(1, (len(Goods.all_goods) + 1)))
                         name_and_qty = Goods.info_tuples()
@@ -269,8 +191,36 @@ if __name__ == '__main__':
                             qty = ask_for_float()
                             Goods.buy(name=str(add_items_options.get(product_choice)[0]), number=qty)
 
-                    if choice_1 == 3:
-                        "Change price of a product"
+                    "Add new goods"
+                    if choice_goods == 2:
+                        pass
+
+                    "Remove Goods"
+                    if choice_goods == 3:
+                        pass
+
+
+                case 3:
+                    "Products"
+                    print(options_products)
+                    choice_products = make_choice(number=3)
+
+                    "Add new Product"
+                    if choice_products == 1:
+                        try:
+                            Products.create_new()
+                        except Exception as e:
+                            print(e)
+
+                    "Withdraw Product"
+                    if choice_products == 2:
+                        try:
+                            Products.delete()
+                        except Exception as e:
+                            print(e)
+
+                    "Change price of a Product"
+                    if choice_products == 3:
                         keys = list(range(1, (len(Products.all_products) + 1)))
                         name_and_price = Products.info_tuples()
                         change_price_options = dict(zip(keys, name_and_price))
@@ -292,8 +242,7 @@ if __name__ == '__main__':
                             prices.append(new_price)
                             print(f"{product.name.capitalize()} - New price: {product.get_price()} {euro}")
                             report_today.changed_price[product.name] = prices
-
-                case 2:
+                case 4:
                     """Bakery"""
                     enough_to_bake_one = []
                     not_enough_for_one = []
@@ -331,8 +280,8 @@ if __name__ == '__main__':
                             if number <= bake_max:
                                 report_today.update_baked(product_name, number)
 
-                case 3:
-                    """SALES"""
+                case 5:
+                    "SALES"
                     for_sale = Products.products_for_sale()
                     while True:
                         print(options_sales)
@@ -426,22 +375,22 @@ if __name__ == '__main__':
                             case 0:
                                 break
 
-                case 4:
-                    """Reports"""
+                case 6:
+                    "Reports"
                     while True:
                         print(options_report)
                         choice_report = make_choice(number=4)
 
                         match choice_report:
                             case 1:
-                                """Current"""
+                                "Current"
                                 if os.path.getsize(current_file) == 0:
                                     print("No transactions yet.")
                                 else:
                                     Reports.display_current_report()
 
                             case 2:
-                                """For specific day"""
+                                "For specific day"
                                 if os.path.getsize(reports_file) == 0:
                                     print("This is first day. No reports yet.")
                                 else:
@@ -463,7 +412,7 @@ if __name__ == '__main__':
                                         report.display_report()
 
                             case 3:
-                                """Display all"""
+                                "Display all"
                                 report_today.print_day_with_suffix()
                                 reports = Reports.deserialize_reports_to_list()
                                 if len(reports) == 0:
@@ -473,7 +422,7 @@ if __name__ == '__main__':
                                         report.display_report()
 
                             case 4:
-                                """Monthly report"""
+                                "Monthly report"
                                 if os.path.getsize(reports_file) == 0:
                                     print("This is first day, no reports yet.")
                                 else:
