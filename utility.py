@@ -1,7 +1,11 @@
 euro = chr(8364)
+data_file = "Data/data.xlsx"
+reports_file = "Reports/by_day.txt"
+current_file = "Reports/current.txt"
+recipes_file = "Data/recipes.txt"
 
 options_main = """
-    1. Supplies Info
+    1. Supplies
     2. Goods
     3. Products
     4. Bakery
@@ -20,9 +24,10 @@ options_goods = """
 """
 
 options_products = """
-    1. Add new Product
+    1. Add new Product 
     2. Withdraw Product
     3. Change price of a Product
+    4. Add recipe to Product
 
 * to return to Main enter 0
 """
@@ -90,6 +95,7 @@ def ask_for_float() -> float:
         except ValueError:
             print("Typing error. Try again.")
             continue
+
 
 
 

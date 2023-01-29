@@ -1,6 +1,8 @@
+import json
 from goods import Goods
 from project_exceptions import *
 from utility import ask_for_float, make_choice, euro
+from itertools import zip_longest
 
 
 class Products:
@@ -103,15 +105,16 @@ class Products:
         raise NotFound
 
     def check_there_is_enough_ingredients(self, number_of_products_making: int) -> bool:
-        for name in self.recipe.keys():
-            ingredient = Goods.find(name)
-            quantity_after_making = ingredient.get_quantity() - \
-                                    self.get_quantity_for_ingredient(ingredient.name) * number_of_products_making
-            if quantity_after_making >= 0:
-                continue
-            else:
-                return False
-        return True
+        if len(self.recipe) > 0:
+            for name in self.recipe.keys():
+                ingredient = Goods.find(name)
+                quantity_after_making = ingredient.get_quantity() - \
+                                        self.get_quantity_for_ingredient(ingredient.name) * number_of_products_making
+                if quantity_after_making >= 0:
+                    continue
+                else:
+                    return False
+            return True
 
     def change_goods_quantity_after_making_products(self, number_of_products_making) -> None:
         for name in self.recipe.keys():
@@ -137,7 +140,7 @@ class Products:
         return all_products
 
     @classmethod
-    def create_new(cls):
+    def create_new(cls) -> None:
         string = "\nCurrent products:\n"
         for name in cls.names_of_all:
             string += f"{name}, "
@@ -150,7 +153,15 @@ class Products:
         print("Enter price for new product? ", end="")
         price = ask_for_float()
         Products(name=new_product_name, price=price, on_stock=0, recipe={})
-        print(f"We have new product - {new_product_name} {price} {euro} ")
+        print(f"New product - {new_product_name} {price} {euro}")
+
+    @staticmethod
+    def add_recipe_to_product():
+        goods_str = ""
+        for name in Goods.names_of_all:
+            goods_str += f"{name}, "
+        goods_str = goods_str[:-2]
+        print(f"These are all goods available as ingredients: {goods_str}")
 
     @classmethod
     def delete(cls):
@@ -175,3 +186,41 @@ class Products:
                 for product in cls.all_products:
                     if product.name == options.get(choice):
                         del product
+
+    @staticmethod
+    def stock_info() -> str:
+        string = ""
+        string += f"\n{'CURRENTLY ON STOCK:':^48}"
+        string += "\n-----------------------------------------------"
+        string += f'\n{"Goods:": <25}{"Products:": <25}'
+        string += "\n-----------------------------------------------"
+        for goods, products in zip_longest(Goods.info(), Products.info(), fillvalue=""):
+            string += f'\n{goods: <25}{products: <25}'
+        string += "\n-----------------------------------------------"
+        return string
+
+    """Functions regarding recipes"""
+
+    @staticmethod
+    def serialize_recipes_to_file(file) -> None:
+        all_recipes = []
+        for product in Products.all_products:
+            recipe = {product.name: product.recipe}
+            all_recipes.append(recipe)
+
+        with open(file, 'w') as f:
+            for recipe in all_recipes:
+                recipe_json = json.dumps(recipe, sort_keys=True)
+                f.write(recipe_json)
+                f.write("\n")
+
+    @staticmethod
+    def deserialize_recipes_from_file(file) -> list:
+        with open(file, 'r') as f:
+            recipes_list_json = f.read().splitlines()
+            print(recipes_list_json)
+            all_recipes = []
+            for recipe in recipes_list_json:
+                all_recipes.append(json.loads(recipe))
+            print(all_recipes)
+        return all_recipes

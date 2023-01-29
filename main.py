@@ -1,5 +1,4 @@
 from functools import reduce
-import itertools
 import os
 import json
 import pandas as pd
@@ -7,24 +6,6 @@ from utility import *
 from goods import Goods
 from products import Products
 from reports import Reports
-
-euro = chr(8364)
-data_file = "Data/data.xlsx"
-recipes_file = "Data/recipes.xlsx"
-reports_file = "Reports/by_day.txt"
-current_file = "Reports/current.txt"
-
-
-def stock_info() -> str:
-    string = ""
-    string += f"\n{'CURRENTLY ON STOCK:':^48}"
-    string += "\n-----------------------------------------------"
-    string += f'\n{"Goods:": <25}{"Products:": <25}'
-    string += "\n-----------------------------------------------"
-    for goods, products in itertools.zip_longest(Goods.info(), Products.info(), fillvalue=""):
-        string += f'\n{goods: <25}{products: <25}'
-    string += "\n-----------------------------------------------"
-    return string
 
 
 def import_data() -> None:
@@ -45,15 +26,11 @@ def import_data() -> None:
         Products(name, price, quantity, recipe={})
 
     """Initialize Recipes"""
-    r_dict = {}
-    df = pd.read_excel(recipes_file)
-    convert = [v.dropna().to_dict() for k, v in df.iterrows()]
-    for item in convert:
-        key = item.pop("Recipe for")
-        r_dict[key] = item
-    for key, value in r_dict.items():
-        product = Products.find_product_by_name(key)
-        product.recipe = value
+    all_recipes = Products.deserialize_recipes_from_file(recipes_file)
+    for recipe in all_recipes:
+        for key, value in recipe.items():
+            product = Products.find_product_by_name(key)
+            product.recipe = value
 
 
 def get_day() -> int:
@@ -164,8 +141,8 @@ if __name__ == '__main__':
 
             match choice:
                 case 1:
-                    "Supplies Info"
-                    print(stock_info())
+                    "Supplies"
+                    print(Products.stock_info())
 
                 case 2:
                     "Goods"
@@ -199,11 +176,10 @@ if __name__ == '__main__':
                     if choice_goods == 3:
                         pass
 
-
                 case 3:
                     "Products"
                     print(options_products)
-                    choice_products = make_choice(number=3)
+                    choice_products = make_choice(number=4)
 
                     "Add new Product"
                     if choice_products == 1:
@@ -242,6 +218,11 @@ if __name__ == '__main__':
                             prices.append(new_price)
                             print(f"{product.name.capitalize()} - New price: {product.get_price()} {euro}")
                             report_today.changed_price[product.name] = prices
+
+                    """Add recipe to Product"""
+                    if choice_products == 3:
+                        pass
+
                 case 4:
                     """Bakery"""
                     enough_to_bake_one = []
@@ -444,6 +425,7 @@ if __name__ == '__main__':
                     with open(reports_file, "a") as f:
                         f.write(f'{Reports.serialization(report_today)}\n')
                     open(current_file, 'w').close()
+                    Products.serialize_recipes_to_file(recipes_file)
                     export_data()
                     break
     except Exception as e:

@@ -1,0 +1,7 @@
+{"muffin": {"butter": 0.05, "eggs": 1.0, "flour": 0.2}}
+{"bread": {"flour": 0.8}}
+{"banana bread": {"banana": 2.0, "butter": 0.05, "eggs": 1.0, "flour": 0.7}}
+{"brownie": {"butter": 0.05, "chocolate": 0.05, "eggs": 1.0, "flour": 0.2}}
+{"choco tart": {"butter": 0.05, "chocolate": 0.1, "flour": 0.4}}
+{"apple pie": {"apples": 3.0, "butter": 0.1, "eggs": 1.0, "flour": 0.5}}
+{"cheese pie": {"butter": 0.1, "cheese": 0.3, "eggs": 1.0, "flour": 0.6}}
