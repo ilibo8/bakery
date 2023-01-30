@@ -170,7 +170,7 @@ if __name__ == '__main__':
 
                     "Add new goods"
                     if choice_goods == 2:
-                        pass
+                        Goods.add_new()
 
                     "Remove Goods"
                     if choice_goods == 3:
@@ -179,7 +179,7 @@ if __name__ == '__main__':
                 case 3:
                     "Products"
                     print(options_products)
-                    choice_products = make_choice(number=4)
+                    choice_products = make_choice(number=5)
 
                     "Add new Product"
                     if choice_products == 1:
@@ -220,7 +220,36 @@ if __name__ == '__main__':
                             report_today.changed_price[product.name] = prices
 
                     """Add recipe to Product"""
-                    if choice_products == 3:
+                    if choice_products == 4:
+
+                        product_to_add_recipe = []
+                        for product in Products.all_products:
+                            if len(product.recipe) == 0:
+                                product_to_add_recipe.append(product)
+                        if len(product_to_add_recipe) == 0:
+                            print("There are no products without recipes, first create one.")
+                        else:
+                            print("Products without recipes:")
+                            numbers = list(range(1, (len(product_to_add_recipe) + 1)))
+                            names = [product.name for product in product_to_add_recipe]
+                            options = dict(zip(numbers, names))
+                            print("Add recipe to which product?")
+                            print("-------------------------------")
+                            for key, value in options.items():
+                                print(f"{key:3}. {value.capitalize():12}")
+                            print("\n* to exit enter 0\n")
+                            choice = make_choice(len(product_to_add_recipe))
+                            if choice == 0:
+                                print("Everything is canceled.")
+                            else:
+                                print(f'Add recipe for {options.get(choice)}.')
+                                product = Products.find_product_by_name(options.get(choice))
+                                product.recipe = Products.add_recipe_to_product()
+                                print(f'{product.name.capitalize()} recipe: ', end="")
+                                product.print_recipe()
+
+                    """Change recipe of Product"""
+                    if choice_products == 5:
                         pass
 
                 case 4:
@@ -238,7 +267,10 @@ if __name__ == '__main__':
                         keys = list(range(1, (len(enough_to_bake_one) + 1)))
                         bake_options = dict(zip(keys, enough_to_bake_one))
                         if len(not_enough_for_one) > 0:
-                            print(f"To bake: {not_enough_for_one} you need to buy some goods.")
+                            not_enough_for_one_str = ""
+                            for item in not_enough_for_one:
+                                not_enough_for_one_str += f"{item}, "
+                            print(f"To bake: {not_enough_for_one_str[:-2]} you need to Increase stock of goods.")
                         if len(Goods.check_for_low_stock()) > 0:
                             [print(f"{good.capitalize()} is low on stock.") for good in Goods.check_for_low_stock()]
                         print("\nWhat do you want to bake?")
@@ -252,6 +284,7 @@ if __name__ == '__main__':
                         else:
                             product_name = bake_options.get(number)
                             product = Products.find_product_by_name(product_name)
+                            print("For one : ", end="")
                             product.print_recipe()
                             bake_max = product.calculate_max_products_to_bake_based_on_stock()
                             print(f"\nMaximum to bake is {bake_max}")

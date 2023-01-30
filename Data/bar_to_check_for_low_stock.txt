@@ -1,0 +1,1 @@
+{"flour": 1.5, "eggs": 3, "butter": 0.3, "cheese": 1, "chocolate": 0.3, "banana": 3, "apples": 3, "sugar": 0.3}

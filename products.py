@@ -94,7 +94,6 @@ class Products:
         return for_sale
 
     def print_recipe(self) -> None:
-        print("For one : ", end="")
         for ingredient in self.recipe.keys():
             print(f"{ingredient} - {self.recipe[ingredient]}({Goods.get_measure_for_goods(ingredient)})", end=" ")
 
@@ -145,24 +144,64 @@ class Products:
         for name in cls.names_of_all:
             string += f"{name}, "
         print(string[:-2])
-        new_product_name = input("\nWhat new product would you like to add? >>> ").lower()
-        while new_product_name in cls.names_of_all:
-            if new_product_name.isdigit():
-                raise Exception("Cannot be a number.")
-            new_product_name = input("Input error. Already have that product, try another one. >>> ").lower()
-        print("Enter price for new product? ", end="")
-        price = ask_for_float()
-        Products(name=new_product_name, price=price, on_stock=0, recipe={})
-        print(f"New product - {new_product_name} {price} {euro}")
+        print("\nEnter name of product you would like to add?")
+        new_product_name = input("To exit enter 0 >>> ").lower()
+        if new_product_name == 0:
+            pass
+        else:
+            while new_product_name in cls.names_of_all:
+                if new_product_name.isdigit():
+                    raise Exception("Cannot be a number.")
+                new_product_name = input("Input error. Already have that product, try another one. >>> ").lower()
+            print("Enter price for new product? ", end="")
+            price = ask_for_float()
+            Products(name=new_product_name, price=price, on_stock=0, recipe={})
+            print(f"New product - {new_product_name} {price} {euro}")
 
     @staticmethod
-    def add_recipe_to_product():
+    def add_recipe_to_product() -> dict:
         goods_str = ""
         for name in Goods.names_of_all:
             goods_str += f"{name}, "
         goods_str = goods_str[:-2]
         print(f"These are all goods available as ingredients: {goods_str}")
+        answer = input("Is new ingredient necessary? Y/N >>> ").lower()
+        while answer not in ('y', 'n'):
+            answer = input("Wrong input, try again - Y/N for new ingredient >>> ").lower()
+        if answer == 'y':
+            pass
+        else:
+            ingredients = Goods.names_of_all
+            numbers = list(range(1, (len(ingredients) + 1)))
+            name = ingredients
+            options = dict(zip(numbers, name))
+            ingredients_to_use = set()
+            print("Which ingredients do you need?")
+            for number, name in options.items():
+                print(f"{number:3}. {name.capitalize():12}")
+            print("To exit enter 0")
+            print("---------------------------")
+            while True:
+                product_choice = make_choice(len(options))
+                if product_choice == 0:
+                    if len(ingredients_to_use) == 0:
+                        print("You need at least one ingredient.")
+                        pass
+                    else:
+                        break
+                else:
+                    ingredients_to_use.add(options.get(product_choice))
+                    string = ""
+                    for item in ingredients_to_use:
+                        string += f"{item}, "
+                    print(f"Ingredients to use: {string[:-2]}")
 
+            recipe = {}
+            for name in ingredients_to_use:
+                print(f"Enter quantity for {name} ({Goods.find(name).measure}) ", end="")
+                value = ask_for_float()
+                recipe[name] = value
+            return recipe
     @classmethod
     def delete(cls):
         keys = list(range(1, (len(cls.all_products) + 1)))
@@ -218,9 +257,7 @@ class Products:
     def deserialize_recipes_from_file(file) -> list:
         with open(file, 'r') as f:
             recipes_list_json = f.read().splitlines()
-            print(recipes_list_json)
             all_recipes = []
             for recipe in recipes_list_json:
                 all_recipes.append(json.loads(recipe))
-            print(all_recipes)
         return all_recipes

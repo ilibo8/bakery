@@ -28,6 +28,7 @@ options_products = """
     2. Withdraw Product
     3. Change price of a Product
     4. Add recipe to Product
+    5. Change recipe of Product
 
 * to return to Main enter 0
 """
