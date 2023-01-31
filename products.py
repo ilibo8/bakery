@@ -1,7 +1,7 @@
 import json
 from goods import Goods
 from project_exceptions import *
-from utility import ask_for_float, make_choice, euro
+from utility import ask_for_float, make_choice, euro, recipes_file
 from itertools import zip_longest
 
 
@@ -158,6 +158,73 @@ class Products:
             Products(name=new_product_name, price=price, on_stock=0, recipe={})
             print(f"New product - {new_product_name} {price} {euro}")
 
+
+    @classmethod
+    def delete(cls):
+        keys = list(range(1, (len(cls.all_products) + 1)))
+        values = [product.name for product in cls.all_products]
+        options = dict(zip(keys, values))
+        print("\nWhich product to remove?")
+        print("------------------------------")
+        for key, value in options.items():
+            print(f"{key:3}. {value.capitalize():12}")
+        print("\n* to return to Main enter 0\n")
+        choice = make_choice(number=len(values))
+        if choice == 0:
+            pass
+        else:
+            answer = input(f"Are you sure you want to remove {options.get(choice)}? Y/N >>>").lower()
+            while answer not in ("y", "n"):
+                answer = input(f"Please confirm removal of {options.get(choice)}? Y/N >>>").lower()
+            if answer == "n":
+                print("Canceled.")
+            else:
+                try:
+                    for index, item in enumerate(cls.all_products):
+                        if item.name == options.get(choice):
+                            del cls.all_products[index]
+                    Products.delete_recipe_from_file(file=recipes_file,recipe_name=options.get(choice))
+                except Exception as e:
+                    print(e)
+                else:
+                    print(f"Product {options.get(choice)} removed.")
+
+    @staticmethod
+    def stock_info() -> str:
+        string = ""
+        string += f"\n{'CURRENTLY ON STOCK:':^48}"
+        string += "\n-----------------------------------------------"
+        string += f'\n{"Goods:": <25}{"Products:": <25}'
+        string += "\n-----------------------------------------------"
+        for goods, products in zip_longest(Goods.info(), Products.info(), fillvalue=""):
+            string += f'\n{goods: <25}{products: <25}'
+        string += "\n-----------------------------------------------"
+        return string
+
+    """Functions regarding recipes"""
+
+    @staticmethod
+    def serialize_recipes_to_file(file) -> None:
+        all_recipes = []
+        for product in Products.all_products:
+            recipe = {product.name: product.recipe}
+            all_recipes.append(recipe)
+
+        with open(file, 'w') as f:
+            for recipe in all_recipes:
+                recipe_json = json.dumps(recipe, sort_keys=True)
+                f.write(recipe_json)
+                f.write("\n")
+
+    @staticmethod
+    def deserialize_recipes_from_file(file) -> list:
+        with open(file, 'r') as f:
+            recipes_list_json = f.read().splitlines()
+            all_recipes = []
+            for recipe in recipes_list_json:
+                all_recipes.append(json.loads(recipe))
+        return all_recipes
+
     @staticmethod
     def add_recipe_to_product() -> dict:
         goods_str = ""
@@ -202,62 +269,34 @@ class Products:
                 value = ask_for_float()
                 recipe[name] = value
             return recipe
-    @classmethod
-    def delete(cls):
-        keys = list(range(1, (len(cls.all_products) + 1)))
-        values = [product.name for product in cls.all_products]
-        options = dict(zip(keys, values))
-        print("\nWhich product to remove?")
-        print("------------------------------")
+
+    @staticmethod
+    def create_recipe(products: list, message: str) -> None:
+        numbers = list(range(1, (len(products) + 1)))
+        names = [product.name for product in products]
+        options = dict(zip(numbers, names))
+        print(f"{message} to which product?")
+        print("-------------------------------")
         for key, value in options.items():
             print(f"{key:3}. {value.capitalize():12}")
-        print("\n* to return to Main enter 0\n")
-        choice = make_choice(number=len(values))
+        print("\n* to exit enter 0\n")
+        choice = make_choice(len(products))
         if choice == 0:
-            pass
+            print("Everything is canceled.")
         else:
-            answer = input(f"Are you sure you want to remove {options.get(choice)}? Y/N >>>").lower()
-            while answer not in ("y", "n"):
-                answer = input(f"Please confirm removal of {options.get(choice)}? Y/N >>>").lower()
-            if answer == "n":
-                print("Canceled.")
-            else:
-                for product in cls.all_products:
-                    if product.name == options.get(choice):
-                        del product
+            print(f'{message} for {options.get(choice)}.')
+            product = Products.find_product_by_name(options.get(choice))
+            product.recipe = Products.add_recipe_to_product()
+            print(f'{product.name.capitalize()} recipe: ', end="")
+            product.print_recipe()
+            Products.serialize_recipes_to_file()
+            
 
     @staticmethod
-    def stock_info() -> str:
-        string = ""
-        string += f"\n{'CURRENTLY ON STOCK:':^48}"
-        string += "\n-----------------------------------------------"
-        string += f'\n{"Goods:": <25}{"Products:": <25}'
-        string += "\n-----------------------------------------------"
-        for goods, products in zip_longest(Goods.info(), Products.info(), fillvalue=""):
-            string += f'\n{goods: <25}{products: <25}'
-        string += "\n-----------------------------------------------"
-        return string
+    def delete_recipe_from_file(file, recipe_name: str) -> None:
+        recipes_list = Products.deserialize_recipes_from_file(file)
+        for index, recipe in enumerate(recipes_list):
+            if recipe.keys() == recipe_name:
+                del recipes_list[index]
 
-    """Functions regarding recipes"""
 
-    @staticmethod
-    def serialize_recipes_to_file(file) -> None:
-        all_recipes = []
-        for product in Products.all_products:
-            recipe = {product.name: product.recipe}
-            all_recipes.append(recipe)
-
-        with open(file, 'w') as f:
-            for recipe in all_recipes:
-                recipe_json = json.dumps(recipe, sort_keys=True)
-                f.write(recipe_json)
-                f.write("\n")
-
-    @staticmethod
-    def deserialize_recipes_from_file(file) -> list:
-        with open(file, 'r') as f:
-            recipes_list_json = f.read().splitlines()
-            all_recipes = []
-            for recipe in recipes_list_json:
-                all_recipes.append(json.loads(recipe))
-        return all_recipes

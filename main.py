@@ -174,7 +174,24 @@ if __name__ == '__main__':
 
                     "Remove Goods"
                     if choice_goods == 3:
-                        pass
+                        try:
+                            goods = Goods.names_of_all
+                            numbers = list(range(1, (len(goods) + 1)))
+                            options = dict(zip(numbers, goods))
+                            print("\nWhat do you want to remove?")
+                            print("------------------------------")
+                            for key, value in options.items():
+                                print(f"{key:3}. {value.capitalize():12}")
+                            print("\n* to return to Main enter 0\n")
+                            choice = make_choice(len(options))
+                            if choice == 0:
+                                pass
+                            else:
+                                name = options.get(choice)
+                                Goods.remove(name=name)
+                                print(f"{name.capitalize()} removed.")
+                        except Exception as e:
+                            print(e)
 
                 case 3:
                     "Products"
@@ -230,27 +247,12 @@ if __name__ == '__main__':
                             print("There are no products without recipes, first create one.")
                         else:
                             print("Products without recipes:")
-                            numbers = list(range(1, (len(product_to_add_recipe) + 1)))
-                            names = [product.name for product in product_to_add_recipe]
-                            options = dict(zip(numbers, names))
-                            print("Add recipe to which product?")
-                            print("-------------------------------")
-                            for key, value in options.items():
-                                print(f"{key:3}. {value.capitalize():12}")
-                            print("\n* to exit enter 0\n")
-                            choice = make_choice(len(product_to_add_recipe))
-                            if choice == 0:
-                                print("Everything is canceled.")
-                            else:
-                                print(f'Add recipe for {options.get(choice)}.')
-                                product = Products.find_product_by_name(options.get(choice))
-                                product.recipe = Products.add_recipe_to_product()
-                                print(f'{product.name.capitalize()} recipe: ', end="")
-                                product.print_recipe()
+                            Products.create_recipe(products=product_to_add_recipe, message="Add recipe")
 
                     """Change recipe of Product"""
                     if choice_products == 5:
-                        pass
+                        products = Products.all_products
+                        Products.create_recipe(products=products, message="Change recipe")
 
                 case 4:
                     """Bakery"""

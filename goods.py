@@ -93,3 +93,15 @@ class Goods:
                 new = Goods(name=name, quantity=quantity, measure=measure)
                 print(f"Added to stock {new.__str__()}")
                 break
+
+    @classmethod
+    def remove(cls, name: str) -> None:
+        for index, item in enumerate(cls.all_goods):
+            if item.name == name:
+                del cls.all_goods[index]
+        with open("Data/bar_to_check_for_low_stock.txt") as r:
+            bar_for_low_stock = json.loads(r.readline())
+            del bar_for_low_stock[name]
+            with open("Data/bar_to_check_for_low_stock.txt", 'w') as w:
+                json_object = json.dumps(bar_for_low_stock)
+                w.write(json_object)

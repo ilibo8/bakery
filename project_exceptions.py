@@ -5,7 +5,7 @@ class ProjectExceptions(Exception):
 
 class NotFound(ProjectExceptions):
     def __init__(self, name):
-        super().__init__(f"Missing object for {name}.")
+        super().__init__(f"Cannot find data for entry: {name}.")
 
 
 class NotEnoughIngredients(ProjectExceptions):
