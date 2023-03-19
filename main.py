@@ -212,8 +212,36 @@ if __name__ == '__main__':
                         except Exception as e:
                             print(e)
 
-                    "Change price of a Product"
+                    "Change Product Name"
                     if choice_products == 3:
+                        numbers = list(range(1, (len(Products.all_products) + 1)))
+                        names = [product.name for product in Products.all_products]
+                        options = dict(zip(numbers, names))
+                        print("\nChange name of which product?")
+                        print("-------------------------------")
+                        for key, value in options.items():
+                            print(f"{key:3}. {value.capitalize():12}")
+                        print("\n* to return to Main enter 0\n")
+                        choice = make_choice(len(options))
+                        if choice == 0:
+                            pass
+                        else:
+                            name_to_change = options.get(choice)
+                            product = Products.find_product_by_name(name_to_change)
+                            while True:
+                                new_name = input("Please enter new name >>> ").lower()
+                                if new_name in Products.names_of_all:
+                                    print("Already have product with that name.")
+                                    continue
+                                product.name = new_name
+                                for index, name in enumerate(Products.names_of_all):
+                                    if name == name_to_change:
+                                        Products.names_of_all[index] = new_name
+                                break
+
+
+                    "Change price of a Product"
+                    if choice_products == 4:
                         keys = list(range(1, (len(Products.all_products) + 1)))
                         name_and_price = Products.info_tuples()
                         change_price_options = dict(zip(keys, name_and_price))
@@ -237,7 +265,7 @@ if __name__ == '__main__':
                             report_today.changed_price[product.name] = prices
 
                     """Add recipe to Product"""
-                    if choice_products == 4:
+                    if choice_products == 5:
 
                         product_to_add_recipe = []
                         for product in Products.all_products:
@@ -250,7 +278,7 @@ if __name__ == '__main__':
                             Products.create_recipe(products=product_to_add_recipe, message="Add recipe")
 
                     """Change recipe of Product"""
-                    if choice_products == 5:
+                    if choice_products == 6:
                         products = Products.all_products
                         Products.create_recipe(products=products, message="Change recipe")
 

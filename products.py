@@ -146,7 +146,7 @@ class Products:
         print(string[:-2])
         print("\nEnter name of product you would like to add?")
         new_product_name = input("To exit enter 0 >>> ").lower()
-        if new_product_name == 0:
+        if new_product_name == "0":
             pass
         else:
             while new_product_name in cls.names_of_all:
@@ -236,32 +236,31 @@ class Products:
         while answer not in ('y', 'n'):
             answer = input("Wrong input, try again - Y/N for new ingredient >>> ").lower()
         if answer == 'y':
-            pass
-        else:
-            ingredients = Goods.names_of_all
-            numbers = list(range(1, (len(ingredients) + 1)))
-            name = ingredients
-            options = dict(zip(numbers, name))
-            ingredients_to_use = set()
-            print("Which ingredients do you need?")
-            for number, name in options.items():
-                print(f"{number:3}. {name.capitalize():12}")
-            print("To exit enter 0")
-            print("---------------------------")
-            while True:
-                product_choice = make_choice(len(options))
-                if product_choice == 0:
-                    if len(ingredients_to_use) == 0:
-                        print("You need at least one ingredient.")
-                        pass
-                    else:
-                        break
+            Goods.add_new()
+        ingredients = Goods.names_of_all
+        numbers = list(range(1, (len(ingredients) + 1)))
+        name = ingredients
+        options = dict(zip(numbers, name))
+        ingredients_to_use = set()
+        print("Which ingredients do you need?")
+        for number, name in options.items():
+            print(f"{number:3}. {name.capitalize():12}")
+        print("To exit enter 0")
+        print("---------------------------")
+        while True:
+            product_choice = make_choice(len(options))
+            if product_choice == 0:
+                if len(ingredients_to_use) == 0:
+                    print("You need at least one ingredient.")
+                    pass
                 else:
-                    ingredients_to_use.add(options.get(product_choice))
-                    string = ""
-                    for item in ingredients_to_use:
-                        string += f"{item}, "
-                    print(f"Ingredients to use: {string[:-2]}")
+                    break
+            else:
+                ingredients_to_use.add(options.get(product_choice))
+                string = ""
+                for item in ingredients_to_use:
+                    string += f"{item}, "
+                print(f"Ingredients to use: {string[:-2]}")
 
             recipe = {}
             for name in ingredients_to_use:
@@ -289,7 +288,7 @@ class Products:
             product.recipe = Products.add_recipe_to_product()
             print(f'{product.name.capitalize()} recipe: ', end="")
             product.print_recipe()
-            Products.serialize_recipes_to_file()
+            Products.serialize_recipes_to_file(recipes_file)
             
 
     @staticmethod

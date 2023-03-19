@@ -26,9 +26,10 @@ options_goods = """
 options_products = """
     1. Add new Product 
     2. Withdraw Product
-    3. Change price of a Product
-    4. Add recipe to Product
-    5. Change recipe of Product
+    3. Change Product name
+    4. Change price of a Product
+    5. Add recipe to Product
+    6. Change recipe of Product
 
 * to return to Main enter 0
 """
